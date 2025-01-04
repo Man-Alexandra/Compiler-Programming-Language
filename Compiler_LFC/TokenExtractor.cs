@@ -51,26 +51,6 @@ namespace Compiler_LFC
 
         class CustomVisitor : GrammarBaseVisitor<object>
         {
-            public override object VisitDeclaration(GrammarParser.DeclarationContext context)
-            {
-                var type = context.type().GetText();
-                foreach (var identifier in context.identifier())
-                {
-                    var variableName = identifier.GetText();
-                    Console.WriteLine($"Tip: {type}, Variabilă: {variableName}");
-                }
-
-                if (context.ASSIGN() != null)
-                {
-                    foreach (var expr in context.expression())
-                    {
-                        var value = expr.GetText();
-                        Console.WriteLine($"Expresie: {value}");
-                    }
-                }
-
-                return base.VisitDeclaration(context);
-            }
 
         }
     }
