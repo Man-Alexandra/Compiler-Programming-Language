@@ -1,6 +1,6 @@
 // Mini-Language Grammar (ANTLR g4 file)
 
-grammar MiniLang;
+grammar Grammar;
 
 // Parser Rules
 program          : (declaration | functionDefinition)* EOF;
