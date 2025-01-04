@@ -13,7 +13,13 @@ public class Program
 
             string outputCode = @"OutPutCode.txt";
 
+            string variableCollector = @"VariableCollector.txt";
+
+            string synataxCollector = @"SyntaxCollector.txt";
+
             TokenExtractor.ExtractTokens(CodeSorce, outputCode);
+            VariableCollector.CollectVariables(CodeSorce,variableCollector);
+            SyntaxCollector.CollectSyntax(CodeSorce, synataxCollector);
         }
         catch (Exception ex)
         {
