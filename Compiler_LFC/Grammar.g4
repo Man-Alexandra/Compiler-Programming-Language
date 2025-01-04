@@ -30,7 +30,10 @@ forStatement:
 	FOR LPAREN declaration expression SEMICOLON expression RPAREN statement;
 returnStatement: RETURN expression? SEMICOLON;
 expressionStatement: expression SEMICOLON;
-expression: logicalOrExpression | functionCall;
+expression:
+	logicalOrExpression
+	| functionCall
+	| primaryExpression;
 logicalOrExpression:
 	logicalAndExpression (OR logicalAndExpression)*;
 logicalAndExpression:

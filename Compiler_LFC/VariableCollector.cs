@@ -20,7 +20,7 @@ namespace Compiler_LFC
             lexer.RemoveErrorListeners();
 
             var tree = parser.program();
-            Console.WriteLine(tree.ToStringTree(parser));
+            //Console.WriteLine(tree.ToStringTree(parser));
 
             // Creăm o listă pentru a stoca variabilele globale
             var variables = new List<string>();

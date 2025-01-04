@@ -20,7 +20,7 @@ namespace Compiler_LFC
             lexer.RemoveErrorListeners();
 
             var tree = parser.program();
-            Console.WriteLine(tree.ToStringTree(parser));
+            //Console.WriteLine(tree.ToStringTree(parser));
 
             // Creăm liste pentru a stoca funcțiile și structurile de control
             var functions = new List<string>();
@@ -62,7 +62,7 @@ namespace Compiler_LFC
         private List<string> _functions;
         private List<string> _controlStructures;
         private List<string> _localVariables;
-
+        private GrammarParser.FunctionDefinitionContext _currentFunctionContext;
         public SyntaxCollectorVisitor(List<string> functions, List<string> controlStructures, List<string> localVariables)
         {
             _functions = functions;
@@ -73,6 +73,7 @@ namespace Compiler_LFC
         // Vizitator pentru funcții
         public override object VisitFunctionDefinition(GrammarParser.FunctionDefinitionContext context)
         {
+            _currentFunctionContext = context;
             var functionType = context.type().GetText();
             var functionName = context.identifier().GetText();
             var parameters = context.parameterList() != null
@@ -100,9 +101,55 @@ namespace Compiler_LFC
         // Verificăm dacă o funcție este recursivă
         private bool IsRecursiveFunction(string functionName)
         {
-            // Poti adăuga logică aici pentru a detecta recursivitatea funcțiilor
-            return false; // Exemplu: presupunem că nu este recursivă
+            // Obține corpul funcției curente
+            var blockContext = _currentFunctionContext.block();
+
+            // Dacă nu există un corp de funcție, nu poate fi recursivă
+            if (blockContext == null)
+                return false;
+
+            // Verificăm fiecare declarație din corpul funcției
+            foreach (var statement in blockContext.statement())
+            {
+                // Dacă găsim un apel de funcție cu același nume
+                if (ContainsRecursiveCall(statement, functionName))
+                    return true;
+            }
+
+            // Nu s-a găsit nicio apelare recursivă
+            return false;
         }
+
+        private bool ContainsRecursiveCall(GrammarParser.StatementContext statement, string functionName)
+        {
+            // Caută apeluri de funcție în arborele contextului
+            var functionCalls = FindAllFunctionCalls(statement);
+
+            // Verifică dacă vreun apel de funcție are același nume cu funcția curentă
+            return functionCalls.Any(call => call.identifier().GetText() == functionName);
+        }
+
+        private IEnumerable<GrammarParser.FunctionCallContext> FindAllFunctionCalls(ParserRuleContext context)
+        {
+            var functionCalls = new List<GrammarParser.FunctionCallContext>();
+
+            // Parcurge toate nodurile copil ale contextului
+            foreach (var child in context.children)
+            {
+                if (child is GrammarParser.FunctionCallContext functionCall)
+                {
+                    functionCalls.Add(functionCall);
+                }
+                else if (child is ParserRuleContext childContext)
+                {
+                    // Caută recursiv în nodurile copil
+                    functionCalls.AddRange(FindAllFunctionCalls(childContext));
+                }
+            }
+
+            return functionCalls;
+        }
+
 
         // Colectăm variabilele locale dintr-o funcție
         private List<string> CollectLocalVariables(GrammarParser.FunctionDefinitionContext context)

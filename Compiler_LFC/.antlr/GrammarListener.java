@@ -1,4 +1,4 @@
-// Generated from g:/Jubii/FACULTATE/ANU II SEM 1/LFC/Compiler_LFC/Compiler_LFC/Grammar.g4 by ANTLR 4.13.1
+// Generated from d:/Anul2/LFC/Compiler_LFC/Compiler_LFC/Grammar.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -226,6 +226,26 @@ public interface GrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrimaryExpression(GrammarParser.PrimaryExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#functionCall}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionCall(GrammarParser.FunctionCallContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#functionCall}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionCall(GrammarParser.FunctionCallContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#argumentList}.
+	 * @param ctx the parse tree
+	 */
+	void enterArgumentList(GrammarParser.ArgumentListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#argumentList}.
+	 * @param ctx the parse tree
+	 */
+	void exitArgumentList(GrammarParser.ArgumentListContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GrammarParser#identifier}.
 	 * @param ctx the parse tree
