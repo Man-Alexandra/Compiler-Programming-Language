@@ -7,11 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compiler_LFC", "Compiler_LF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4AC6AF80-0B98-4970-90AA-35F595E1B057}"
 	ProjectSection(SolutionItems) = preProject
-		Lexer.cs = Lexer.cs
-		Logger.cs = Logger.cs
-		Parser.cs = Parser.cs
-		SemanticAnalyzer.cs = SemanticAnalyzer.cs
-		SymbolTable.cs = SymbolTable.cs
+		SyntaxCollectorVisitor.cs = SyntaxCollectorVisitor.cs
+		VariableCollector.cs = VariableCollector.cs
 	EndProjectSection
 EndProject
 Global
