@@ -53,7 +53,8 @@ primaryExpression:
 	literal
 	| identifier
 	| LPAREN expression RPAREN
-	| functionCall; // adăugăm regula pentru apeluri de funcți
+	| functionCall // adăugăm regula pentru apeluri de funcți
+	| identifier (INCREMENT | DECREMENT)?;
 
 functionCall: identifier LPAREN argumentList? RPAREN;
 
