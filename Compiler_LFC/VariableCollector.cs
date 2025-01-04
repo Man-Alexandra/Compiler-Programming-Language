@@ -16,27 +16,17 @@ namespace Compiler_LFC
             var commonTokenStream = new CommonTokenStream(lexer);
             var parser = new GrammarParser(commonTokenStream);
 
-            // Adăugăm un ErrorListener pentru a captura erorile
-            lexer.RemoveErrorListeners();
-
             var tree = parser.program();
-            //Console.WriteLine(tree.ToStringTree(parser));
 
             // Creăm o listă pentru a stoca variabilele globale
             var variables = new List<string>();
             var visitor = new VariableCollectorVisitor(variables);
+
+            // Vizitează arborele de sintaxă
             visitor.Visit(tree);
 
-            // Scriem variabilele globale într-un fișier
-            using (var writer = new StreamWriter(outputFilePath))
-            {
-                writer.WriteLine("Variabile globale:");
-                foreach (var variable in variables)
-                {
-                    writer.WriteLine(variable);
-                }
-            }
-
+            // Scrie variabilele în fișier
+            File.WriteAllLines(outputFilePath, variables);
             Console.WriteLine("Variabilele globale au fost salvate în fișierul: " + outputFilePath);
         }
     }
@@ -51,42 +41,36 @@ namespace Compiler_LFC
             _variables = variables;
         }
 
-        // Modificăm vizitarea declarațiilor pentru a adăuga doar variabilele globale
-        public override object VisitDeclaration(GrammarParser.DeclarationContext context)
+        public override object VisitProgram(GrammarParser.ProgramContext context)
         {
-            // Verificăm dacă declarația este într-o funcție sau bloc (adică nu este globală)
-            var parent = context.Parent;
-
-            // Adăugăm doar variabilele globale (dacă părintele nu este funcție sau bloc)
-            if (!(parent is GrammarParser.FunctionDefinitionContext || parent is GrammarParser.BlockContext))
+            // Parcurge fiecare copil al contextului programului
+            foreach (var child in context.children)
             {
-                // Extragem tipul și numele variabilelor (pentru variabilele globale)
-                var type = context.type().GetText();
-                var identifiers = context.identifier();
-
-                foreach (var identifier in identifiers)
+                // Dacă copilul este o declarație
+                if (child is GrammarParser.DeclarationContext declaration)
                 {
-                    var variableInfo = $"{type} {identifier.GetText()}";
+                    // Obține tipul variabilei
+                    string varType = declaration.type().GetText();
 
-                    // Verificăm dacă există o valoare inițializată
-                    if (context.ASSIGN() != null)
+                    // Parcurge fiecare identificator și expresie asociată
+                    for (int i = 0; i < declaration.identifier().Length; i++)
                     {
-                        var expression = context.expression();
+                        string varName = declaration.identifier(i).GetText();
+                        string varValue = "null"; // Valoare implicită
 
-                        // Dacă expression este un array, procesăm fiecare element
-                        if (expression.Length > 0)
+                        // Verifică dacă există o expresie de asignare
+                        if (declaration.expression(i) != null)
                         {
-                            var value = string.Join(" ", Array.ConvertAll(expression, expr => expr.GetText())); // Concatenăm toate expresiile
-                            variableInfo += " = " + value;
+                            varValue = declaration.expression(i).GetText();
                         }
-                    }
 
-                    // Adăugăm variabila globală în lista de variabile
-                    _variables.Add(variableInfo);
+                        // Adaugă variabila la lista globală
+                        _variables.Add($"{varType} {varName} = {varValue}");
+                    }
                 }
             }
 
-            return base.VisitDeclaration(context);
+            return null; // Returnează null pentru a semnala că vizitarea este finalizată
         }
     }
 }
