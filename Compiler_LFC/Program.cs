@@ -17,9 +17,15 @@ public class Program
 
             string synataxCollector = @"SyntaxCollector.txt";
 
+            string errorFile = @"ErrorReporter.txt";
+
             TokenExtractor.ExtractTokens(CodeSorce, outputCode);
             VariableCollector.CollectVariables(CodeSorce,variableCollector);
             SyntaxCollector.CollectSyntax(CodeSorce, synataxCollector);
+
+            var errorReporter = new ErrorReporter();
+            errorReporter.CheckLexicalErrors(CodeSorce);
+            errorReporter.SaveErrorsToFile(errorFile);
         }
         catch (Exception ex)
         {
