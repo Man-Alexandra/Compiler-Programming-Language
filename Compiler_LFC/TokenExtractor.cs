@@ -26,7 +26,7 @@ namespace Compiler_LFC
 
             var tree = parser.program();
 
-            Console.WriteLine(tree.ToStringTree(parser));
+            //Console.WriteLine(tree.ToStringTree(parser));
 
             //Scriem rezultatele într-un fișier
 

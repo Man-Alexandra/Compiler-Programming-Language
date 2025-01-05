@@ -40,10 +40,12 @@ namespace Compiler_LFC
                     {
                         writer.WriteLine("Error: " + error);
                     }
+                    Console.WriteLine("Informatiile de sintaxa au fost salvate în fisierul: " + filePath);
                 }
                 else
                 {
                     writer.WriteLine("No errors found.");
+                    Console.WriteLine("Informatiile de sintaxa nu au fost salvate în fisierul: " + filePath);
                 }
             }
         }
@@ -57,6 +59,7 @@ namespace Compiler_LFC
             lexer.RemoveErrorListeners();
             lexer.AddErrorListener(new LexicalErrorListener(this));
             commonTokenStream.Fill();
+
 
             // Leaver this empty for now, as lexical errors are handled during the token stream.
         }
@@ -151,52 +154,33 @@ namespace Compiler_LFC
 
         public override object VisitDeclaration(GrammarParser.DeclarationContext context)
         {
-            var type = context.type().GetText();
+            // Check if the declaration is at the global level
+            // A global declaration is outside of a function's scope.
+            bool isGlobal = context.Parent is GrammarParser.ProgramContext;
+
+            // Get all the identifiers from the declaration
             var identifiers = context.identifier();
 
-            // Verificăm dacă variabila este globală
-            foreach (var identifier in identifiers)
+            // Check if the declaration is at the global level
+            if (isGlobal)
             {
-                var varName = identifier.GetText();
-
-                // Verificăm unicitatea variabilelor globale
-                if (_globalVariables.Contains(varName))
+                foreach (var identifier in identifiers)
                 {
-                    _errorReporter.ReportError($"Semantic error: Duplicate global variable {varName}");
-                }
-                else
-                {
-                    _globalVariables.Add(varName);
-                }
+                    var varName = identifier.GetText();
 
-                // Verificăm compatibilitatea tipurilor
-                if (context.ASSIGN() != null)
-                {
-                    var expression = $"{type} {context.GetText()}";
-
-                    // Verificăm tipul valorii și al variabilei
-                    if (type == "int" && !IsIntegerExpression(expression))
+                    // Check if the variable already exists in the global variables set
+                    if (_globalVariables.Contains(varName))
                     {
-                        _errorReporter.ReportError($"Semantic error: Incompatible type assignment for variable {varName}. Expected int but got {expression}");
+                        _errorReporter.ReportError($"Semantic error: Duplicate global variable {varName}");
                     }
-                    else if (type == "double" && !IsDoubleExpression(expression))
+                    else
                     {
-                        _errorReporter.ReportError($"Semantic error: Incompatible type assignment for variable {varName}. Expected double but got {expression}");
+                        _globalVariables.Add(varName);
                     }
                 }
             }
 
             return base.VisitDeclaration(context);
-        }
-
-        private bool IsIntegerExpression(string expression)
-        {
-            return int.TryParse(expression, out _);
-        }
-
-        private bool IsDoubleExpression(string expression)
-        {
-            return double.TryParse(expression, out _);
         }
     }
 }

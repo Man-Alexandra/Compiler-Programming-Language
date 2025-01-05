@@ -52,7 +52,7 @@ namespace Compiler_LFC
                 }
             }
 
-            Console.WriteLine("Informațiile de sintaxă au fost salvate în fișierul: " + outputFilePath);
+            Console.WriteLine("Informatiile de sintaxa au fost salvate în fisierul: " + outputFilePath);
         }
     }
 
