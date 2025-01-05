@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.Metadata;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 
@@ -99,6 +100,9 @@ namespace Compiler_LFC
         private readonly HashSet<string> _globalVariables;
         private readonly HashSet<string> _functionSignatures;
         private readonly HashSet<string> _localVariables = new HashSet<string>();
+        private readonly Dictionary<string, string> _globalVariableTypes = new();
+        private readonly Dictionary<string, string> _localVariableTypes = new();
+        private readonly Dictionary<string, string> _functionReturnTypes = new();
 
         public SemanticErrorVisitor(ErrorReporter errorReporter, HashSet<string> globalVariables, HashSet<string> functionSignatures)
         {
@@ -111,6 +115,10 @@ namespace Compiler_LFC
         {
             // Verificăm unicitatea funcțiilor
             var functionName = context.identifier().GetText();
+            var type = context.type().GetText();
+            _functionReturnTypes[functionName] = type;
+
+
             var parameterList = context.parameterList() != null
                 ? string.Join(", ", context.parameterList().parameter().Select(p => p.GetText()))
                 : "N/A";
@@ -154,21 +162,25 @@ namespace Compiler_LFC
 
         public override object VisitDeclaration(GrammarParser.DeclarationContext context)
         {
-            // Check if the declaration is at the global level
-            // A global declaration is outside of a function's scope.
+
+            // Determine if the declaration is global or local (by checking the parent context)
             bool isGlobal = context.Parent is GrammarParser.ProgramContext;
 
-            // Get all the identifiers from the declaration
+            // Get the declared type (e.g., int, float, etc.)
+            var declaredType = context.type().GetText();
+
+            // Get all the identifiers in the declaration (the variables being declared)
             var identifiers = context.identifier();
+            var expressions = context.expression();
 
-            // Check if the declaration is at the global level
-            if (isGlobal)
+            // Loop through each identifier and check for type compatibility
+            for (int i = 0; i < identifiers.Length; i++)
             {
-                foreach (var identifier in identifiers)
-                {
-                    var varName = identifier.GetText();
+                var varName = identifiers[i].GetText();
 
-                    // Check if the variable already exists in the global variables set
+                // Check for duplicate global variables (if it's a global variable)
+                if (isGlobal)
+                {
                     if (_globalVariables.Contains(varName))
                     {
                         _errorReporter.ReportError($"Semantic error: Duplicate global variable {varName}");
@@ -178,9 +190,62 @@ namespace Compiler_LFC
                         _globalVariables.Add(varName);
                     }
                 }
+                else
+                {
+                    // Check for duplicate local variables
+                    if (_localVariables.Contains(varName))
+                    {
+                        _errorReporter.ReportError($"Semantic error: Duplicate local variable {varName}");
+                    }
+                    else
+                    {
+                        _localVariables.Add(varName);
+                    }
+                }
+                if (context.expression() != null && context.expression().Length > 0)
+                {
+                    var value = context.expression()[0]?.GetText();
+                    if (!IsTypeCompatible(declaredType, value))
+                    {
+                        _errorReporter.ReportError($"Semantic error: Type mismatch for variable {context.identifier()[0].GetText()}");
+                    }
+                }
             }
-
             return base.VisitDeclaration(context);
         }
+
+        private bool IsTypeCompatible(string type, string? value)
+        {
+            if (value == null) return true;
+
+            if (value.Contains("(") && value.Contains(")"))
+            {
+                string functionName = value.Split('(')[0];
+                if (_functionReturnTypes.ContainsKey(functionName))
+                {
+                    return _functionReturnTypes[functionName] == type;
+                }
+                else
+                {
+                    Console.WriteLine($" = Error: Function {functionName} is not defined = ");
+                    return false;
+                }
+            }
+
+            switch (type)
+            {
+                case "int":
+                    return int.TryParse(value, out _);
+                case "float":
+                case "double":
+                    return double.TryParse(value, out _);
+                case "string":
+                    return value.StartsWith("\"") && value.EndsWith("\"");
+                default:
+                    return false;
+            }
+
+        }
+
     }
 }
