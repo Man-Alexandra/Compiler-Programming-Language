@@ -2,7 +2,7 @@
 Aceasta este o aplicatie C# ce simuleaza un compilator antrenat pe un anumit limbaj de programare dat. 
 
 ## Instalare
-Descarcati fisierele de pe ramura 'main' de la Code-> Download ZIP. 
+Descarcati fisierele de pe ramura 'master' de la Code-> Download ZIP. 
 
 ## Tehlologi utilizate
 C#
